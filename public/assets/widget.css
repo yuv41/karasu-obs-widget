@@ -1,0 +1,465 @@
+/* Karasu stream widget. Colours, type and the cut-corner panel follow
+   karasu.live: near-black glass, Karasu cyan, Quantico for figures and
+   Oxanium for text. Kept to features OBS's bundled Chromium has had for
+   years (no color-mix, no :has) so older OBS builds render it the same. */
+
+@font-face {
+  font-family: "Quantico";
+  src: url("/assets/fonts/Quantico-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-display: block;
+}
+@font-face {
+  font-family: "Oxanium";
+  src: url("/assets/fonts/Oxanium-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 800;
+  font-display: block;
+}
+
+:root {
+  --kw-fg: 0 0% 98%;
+  --kw-muted: 240 5% 64.9%;
+  --kw-dim: 240 4% 46%;
+  --kw-line: 240 4% 20%;
+  --kw-accent: 191 87% 48%;
+  --kw-win: 142 70% 55%;
+  --kw-loss: 0 82% 62%;
+  --kw-tie: 240 5% 64.9%;
+  --kw-alpha: 0.9;
+  --kw-scale: 1;
+}
+
+html, body {
+  margin: 0;
+  background: transparent;
+  overflow: hidden;
+}
+body {
+  padding: 12px;
+  color: hsl(var(--kw-fg));
+  font-family: "Oxanium", "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+.kw {
+  --kw-level: 14 165 201;
+  --kw-cut: 14px;
+  display: inline-block;
+  transform: scale(var(--kw-scale));
+  transform-origin: 0 0;
+  opacity: 0;
+}
+.kw.is-ready { opacity: 1; }
+.kw--bar { --kw-cut: 10px; }
+
+/* ── Panel ─────────────────────────────────────────────────────────────── */
+.kw-frame {
+  position: relative;
+  isolation: isolate;
+}
+.kw-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  clip-path: polygon(var(--kw-cut) 0, 100% 0, 100% calc(100% - var(--kw-cut)), calc(100% - var(--kw-cut)) 100%, 0 100%, 0 var(--kw-cut));
+  background:
+    radial-gradient(130% 120% at 0% 0%, rgb(var(--kw-level) / 0.13), transparent 55%),
+    linear-gradient(165deg, hsl(240 9% 9% / var(--kw-alpha)) 0%, hsl(240 10% 4.5% / var(--kw-alpha)) 70%);
+}
+.kw-edge {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+.kw-edge-line { fill: none; stroke: hsl(var(--kw-line)); stroke-width: 1; }
+.kw-edge-accent {
+  fill: none;
+  stroke: hsl(var(--kw-accent));
+  stroke-width: 2;
+  filter: drop-shadow(0 0 4px hsl(var(--kw-accent) / 0.7));
+}
+.kw-sweep {
+  --sweep: 74 222 128;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  clip-path: polygon(var(--kw-cut) 0, 100% 0, 100% calc(100% - var(--kw-cut)), calc(100% - var(--kw-cut)) 100%, 0 100%, 0 var(--kw-cut));
+  background: linear-gradient(105deg, transparent 35%, rgb(var(--sweep) / 0.2) 50%, transparent 65%);
+  background-size: 260% 100%;
+}
+.kw-sweep.is-run { animation: kw-sweep 1.5s cubic-bezier(0.3, 0.6, 0.3, 1); }
+
+.kw-label {
+  color: hsl(var(--kw-dim));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.is-up { color: hsl(var(--kw-win)); }
+.is-down { color: hsl(var(--kw-loss)); }
+.is-flat { color: hsl(var(--kw-muted)); }
+
+/* ── Card ──────────────────────────────────────────────────────────────── */
+.kw--card .kw-frame { width: 400px; padding: 14px 18px 14px; }
+
+.kw-head { display: flex; align-items: center; gap: 11px; padding-bottom: 12px; }
+.kw-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  object-fit: cover;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  background: hsl(var(--kw-line));
+}
+.kw-id { min-width: 0; }
+.kw-name {
+  overflow: hidden;
+  font-size: 15px;
+  font-weight: 650;
+  line-height: 1.2;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  max-width: 230px;
+}
+.kw-rank {
+  margin-top: 2px;
+  font-family: "Quantico", sans-serif;
+  font-size: 11px;
+  color: hsl(var(--kw-accent));
+  font-variant-numeric: tabular-nums;
+}
+.kw-rank-of { color: hsl(var(--kw-dim)); }
+.kw-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  color: hsl(var(--kw-muted));
+  font-family: "Quantico", sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+}
+.kw-brand img { width: 20px; height: 20px; border-radius: 50%; }
+.kw-live {
+  width: 6px;
+  height: 6px;
+  background: hsl(var(--kw-accent));
+  box-shadow: 0 0 8px hsl(var(--kw-accent));
+  transform: rotate(45deg);
+  animation: kw-pulse 2.6s ease-in-out infinite;
+}
+.is-stale .kw-live { background: hsl(var(--kw-dim)); box-shadow: none; animation: none; }
+
+.kw-hero {
+  display: grid;
+  grid-template-columns: 54px 1fr;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 0 14px;
+  border-top: 1px solid hsl(var(--kw-line) / 0.8);
+}
+.kw-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 60px;
+}
+.kw-badge svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.kw-badge path {
+  fill: rgb(var(--kw-level) / 0.14);
+  stroke: rgb(var(--kw-level));
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgb(var(--kw-level) / 0.45));
+  transition: fill 0.6s, stroke 0.6s;
+}
+.kw-badge-cap {
+  position: absolute;
+  top: 14px;
+  color: rgb(var(--kw-level));
+  font-family: "Quantico", sans-serif;
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  opacity: 0.85;
+}
+.kw-badge-num {
+  position: relative;
+  top: 5px;
+  color: rgb(var(--kw-level));
+  font-family: "Quantico", sans-serif;
+  font-size: 22px;
+  line-height: 1;
+  text-shadow: 0 0 10px rgb(var(--kw-level) / 0.5);
+}
+.kw.is-ready .kw-badge.is-levelup { animation: kw-levelup 1.6s cubic-bezier(0.3, 1.4, 0.5, 1); }
+
+.kw-elo-line { display: flex; align-items: baseline; gap: 8px; }
+.kw-elo-wrap { position: relative; }
+.kw-elo {
+  font-family: "Quantico", sans-serif;
+  font-size: 38px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+.kw-elo-unit {
+  color: hsl(var(--kw-dim));
+  font-family: "Quantico", sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+}
+.kw-float {
+  position: absolute;
+  left: calc(100% + 6px);
+  top: -6px;
+  opacity: 0;
+  font-family: "Quantico", sans-serif;
+  font-size: 17px;
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 12px currentColor;
+}
+.kw-float.is-run { animation: kw-float 2.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.kw-delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-left: auto;
+  padding: 4px 9px 4px 10px;
+  font-family: "Quantico", sans-serif;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+  background: hsl(var(--kw-tie) / 0.1);
+}
+.kw-delta b { font-size: 14px; font-weight: 700; }
+.kw-delta small { color: hsl(var(--kw-dim)); font-size: 8px; letter-spacing: 0.2em; }
+.kw-delta.is-up { background: hsl(var(--kw-win) / 0.12); }
+.kw-delta.is-down { background: hsl(var(--kw-loss) / 0.12); }
+
+.kw-progress {
+  position: relative;
+  height: 4px;
+  margin-top: 11px;
+  background: hsl(var(--kw-line));
+}
+.kw-progress i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: linear-gradient(90deg, rgb(var(--kw-level) / 0.55), rgb(var(--kw-level)));
+  box-shadow: 0 0 10px rgb(var(--kw-level) / 0.7);
+  transition: width 1.4s cubic-bezier(0.2, 0.8, 0.2, 1), background 0.6s;
+}
+.kw-progress i::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  top: -2px;
+  width: 2px;
+  height: 8px;
+  background: rgb(var(--kw-level));
+  box-shadow: 0 0 6px rgb(var(--kw-level));
+}
+.kw-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 7px;
+  color: hsl(var(--kw-dim));
+  font-size: 11px;
+  font-weight: 500;
+}
+.kw-level-name { color: rgb(var(--kw-level)); font-weight: 650; }
+
+.kw-today {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 12px 0;
+  border-top: 1px solid hsl(var(--kw-line) / 0.8);
+}
+.kw-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.kw-cell + .kw-cell { border-left: 1px solid hsl(var(--kw-line) / 0.8); }
+.kw-val, .kw-val-elo, .kw-wl {
+  font-family: "Quantico", sans-serif;
+  font-size: 21px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kw-wl { display: inline-flex; align-items: baseline; gap: 5px; }
+.kw-wl b { font-weight: 700; }
+.kw-wl i { color: hsl(var(--kw-dim)); font-size: 0.7em; font-style: normal; }
+.kw-w { color: hsl(var(--kw-win)); }
+.kw-l { color: hsl(var(--kw-loss)); }
+.kw-cell .kw-val-elo { font-size: 21px; }
+
+.kw-recent {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid hsl(var(--kw-line) / 0.8);
+}
+.kw-chips { display: flex; flex: 1; gap: 5px; }
+.kw-chip {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  height: 24px;
+  font-family: "Quantico", sans-serif;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  clip-path: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+.kw-chip::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 5px;
+  bottom: 0;
+  height: 2px;
+  background: currentColor;
+}
+.kw-chip.is-win { color: hsl(var(--kw-win)); background: hsl(var(--kw-win) / 0.12); }
+.kw-chip.is-loss { color: hsl(var(--kw-loss)); background: hsl(var(--kw-loss) / 0.12); }
+.kw-chip.is-tie { color: hsl(var(--kw-tie)); background: hsl(var(--kw-tie) / 0.12); }
+.kw-chip.is-empty { background: hsl(var(--kw-line) / 0.5); }
+.kw-chip.is-empty::after { display: none; }
+.kw-chip.is-new { animation: kw-chip-in 0.8s cubic-bezier(0.3, 1.5, 0.5, 1); }
+
+.kw-last20 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 11px;
+  border-top: 1px solid hsl(var(--kw-line) / 0.8);
+}
+.kw-last20[hidden] { display: none; }
+.kw-last20 small {
+  margin-right: 5px;
+  color: hsl(var(--kw-dim));
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.kw-last20 b { font-family: "Quantico", sans-serif; font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* ── Bar ───────────────────────────────────────────────────────────────── */
+.kw--bar .kw-frame {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 68px;
+  padding: 0 18px 0 14px;
+}
+.kw--bar .kw-badge { width: 42px; height: 47px; }
+.kw--bar .kw-badge-num { top: 0; font-size: 19px; }
+.kw-bar-main { min-width: 150px; }
+.kw-bar-name {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 3px;
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.kw-bar-name > span:first-child { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
+.kw-bar-rank { color: hsl(var(--kw-accent)); font-family: "Quantico", sans-serif; font-size: 10px; font-weight: 700; }
+.kw--bar .kw-elo { font-size: 26px; }
+.kw--bar .kw-elo-unit { font-size: 9px; }
+.kw--bar .kw-progress { height: 3px; margin-top: 6px; }
+.kw--bar .kw-progress i::after { height: 7px; }
+.kw--bar .kw-float { font-size: 14px; top: -4px; }
+.kw-bar-sep { width: 1px; height: 36px; background: hsl(var(--kw-line)); }
+.kw-bar-today, .kw-bar-recent { display: flex; flex-direction: column; gap: 6px; }
+.kw-bar-today-vals {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: "Quantico", sans-serif;
+  font-size: 17px;
+  white-space: nowrap;
+}
+.kw-bar-today-vals .kw-wl { font-size: 17px; gap: 2px; }
+.kw-bar-today-vals .kw-wl i { margin-right: 6px; font-size: 11px; }
+.kw-bar-today-vals .kw-val-elo { font-size: 17px; }
+.kw--bar .kw-chips { gap: 4px; }
+.kw--bar .kw-chip { flex: none; width: 20px; height: 20px; font-size: 10px; clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px); }
+.kw--bar .kw-chip::after { right: 4px; }
+.kw--bar .kw-brand { margin-left: 2px; gap: 8px; }
+.kw--bar .kw-brand img { width: 22px; height: 22px; border-radius: 50%; }
+
+/* ── Message ───────────────────────────────────────────────────────────── */
+.kw-msg {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px 12px 14px;
+  background: hsl(240 10% 5% / 0.92);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  box-shadow: inset 2px 0 0 hsl(var(--kw-accent));
+}
+.kw-msg img { width: 26px; height: 26px; border-radius: 50%; }
+.kw-msg b { display: block; font-family: "Quantico", sans-serif; font-size: 13px; }
+.kw-msg span { color: hsl(var(--kw-muted)); font-size: 12px; }
+
+/* ── Motion ────────────────────────────────────────────────────────────── */
+.kw.is-ready .kw-frame { animation: kw-in 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.kw.is-ready .kw-row { animation: kw-row-in 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 180ms); }
+.kw-bump { display: inline-block; animation: kw-bump 0.7s cubic-bezier(0.3, 1.6, 0.5, 1); }
+
+@keyframes kw-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes kw-row-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes kw-sweep {
+  0% { opacity: 1; background-position: 130% 0; }
+  100% { opacity: 1; background-position: -130% 0; }
+}
+@keyframes kw-float {
+  0% { opacity: 0; transform: translateY(12px) scale(0.7); }
+  14% { opacity: 1; transform: translateY(0) scale(1.15); }
+  28% { transform: translateY(-2px) scale(1); }
+  78% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-16px) scale(1); }
+}
+@keyframes kw-bump {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.22); filter: brightness(1.5); }
+  100% { transform: scale(1); }
+}
+@keyframes kw-chip-in {
+  0% { opacity: 0; transform: translateX(-12px) scale(0.6); filter: brightness(2); }
+  60% { opacity: 1; transform: none; filter: brightness(1.6); }
+  100% { filter: none; }
+}
+@keyframes kw-levelup {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.25); filter: brightness(1.8) drop-shadow(0 0 14px rgb(var(--kw-level))); }
+  100% { transform: scale(1); }
+}
+@keyframes kw-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}

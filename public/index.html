@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Karasu Stream Widget · Live stats for OBS</title>
+<meta name="description" content="Show your Karasu ELO, level, today's matches and recent form on stream. A free OBS browser source.">
+<meta name="theme-color" content="#0a0a0b">
+<meta property="og:title" content="Karasu Stream Widget">
+<meta property="og:description" content="Your Karasu ELO, today's record and recent form, live in OBS.">
+<meta property="og:image" content="https://widget.karasu.live/assets/karasu-mark.png">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="/assets/builder.css?v=1">
+</head>
+<body>
+<div class="bg" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="brand" href="https://karasu.live" rel="noopener">
+    <img src="/assets/karasu-mark.png" alt="">
+    <span>KARASU</span>
+  </a>
+  <span class="tag">Stream widget</span>
+  <a class="top-link" href="https://karasu.live/developers" rel="noopener">Public API</a>
+</header>
+
+<main class="wrap">
+  <section class="intro">
+    <p class="eyebrow"><i></i>OBS browser source</p>
+    <h1>Your Karasu stats,<br><em>live on stream.</em></h1>
+    <p class="lede">ELO and level, today's matches, wins and losses, and how much you've climbed since you went live. It updates by itself and plays the result the moment a match ends.</p>
+  </section>
+
+  <section class="grid">
+    <form class="panel config" id="config" autocomplete="off" onsubmit="return false">
+      <div class="field">
+        <label for="player">Player</label>
+        <div class="input-row">
+          <input id="player" name="player" placeholder="Steam ID or karasu.live profile link" spellcheck="false" inputmode="text">
+        </div>
+        <p class="hint" id="player-status" data-state="idle">Paste the link to your Karasu profile, or the 17-digit Steam ID at the end of it.</p>
+      </div>
+
+      <div class="field">
+        <span class="label">Layout</span>
+        <div class="seg" role="radiogroup" aria-label="Layout">
+          <label><input type="radio" name="layout" value="card" checked><span><b>Card</b><small>Full panel · ELO, today, last 5</small></span></label>
+          <label><input type="radio" name="layout" value="bar"><span><b>Bar</b><small>One line · fits a corner</small></span></label>
+        </div>
+      </div>
+
+      <div class="field two">
+        <label class="toggle"><input type="checkbox" name="avatar" checked><span></span>Steam avatar</label>
+        <label class="toggle" data-card-only><input type="checkbox" name="stats"><span></span>Last 20 stats</label>
+      </div>
+
+      <div class="field">
+        <label for="daystart">“Today” starts at</label>
+        <select id="daystart" name="daystart">
+          <option value="0">Midnight</option>
+          <option value="2">2:00</option>
+          <option value="4">4:00</option>
+          <option value="5">5:00</option>
+          <option value="6">6:00</option>
+          <option value="8">8:00</option>
+          <option value="10">10:00</option>
+          <option value="12">Noon</option>
+        </select>
+        <p class="hint">Streaming past midnight? Pick a later hour so a late session counts as one day.</p>
+      </div>
+
+      <div class="field two">
+        <div>
+          <label for="scale">Size <output id="scale-out">100%</output></label>
+          <input type="range" id="scale" name="scale" min="0.6" max="2" step="0.05" value="1">
+        </div>
+        <div>
+          <label for="bg">Panel opacity <output id="bg-out">90%</output></label>
+          <input type="range" id="bg" name="bg" min="0" max="100" step="5" value="90">
+        </div>
+      </div>
+
+      <div class="field result">
+        <label for="url">Widget link</label>
+        <div class="input-row">
+          <input id="url" readonly value="">
+          <button type="button" class="btn" id="copy" disabled>Copy</button>
+        </div>
+      </div>
+
+      <ol class="steps">
+        <li>In OBS, add a <b>Browser</b> source.</li>
+        <li>Paste the widget link as the <b>URL</b>.</li>
+        <li>Set the size to <b id="obs-size">448 × 284</b>.</li>
+      </ol>
+    </form>
+
+    <section class="panel stage-panel" aria-label="Preview">
+      <div class="stage-head">
+        <span class="label">Preview</span>
+        <span class="stage-note" id="stage-note">Sample data</span>
+      </div>
+      <div class="stage">
+        <div class="stage-hud" aria-hidden="true"><span>LIVE</span><b>00:42:17</b></div>
+        <iframe id="preview" title="Widget preview" scrolling="no"></iframe>
+      </div>
+      <div class="sim">
+        <span>Play a result</span>
+        <button type="button" class="btn sim-win" data-sim="win">Win</button>
+        <button type="button" class="btn sim-loss" data-sim="loss">Loss</button>
+        <small>Preview only. Your real numbers aren't touched.</small>
+      </div>
+    </section>
+  </section>
+
+  <section class="faq">
+    <div>
+      <h3>How often does it update?</h3>
+      <p>Every 45 seconds, straight from the <a href="https://karasu.live/developers" rel="noopener">Karasu public API</a>. Your numbers refresh at most once a minute, so a result shows up within a minute or so of the match ending.</p>
+    </div>
+    <div>
+      <h3>How is “today” counted?</h3>
+      <p>The widget keeps its own tally from your chosen hour, so matches, wins, losses and ELO today stay right even after more than five games. Leave the source in OBS and it carries on where it left off.</p>
+    </div>
+    <div>
+      <h3>Does it cost anything?</h3>
+      <p>No. Nothing to install and no account needed: it's a web page OBS shows over your stream.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <span>Built for <a href="https://karasu.live" rel="noopener">Karasu</a> players.</span>
+  <span>Fonts: Quantico and Oxanium (SIL OFL).</span>
+</footer>
+
+<script src="/assets/builder.js?v=1"></script>
+</body>
+</html>
